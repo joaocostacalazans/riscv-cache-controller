@@ -29,3 +29,21 @@ You can install the dependencies on Ubuntu/Debian-based systems using:
 sudo apt update
 sudo apt install build-essential iverilog verilator gtkwave -y
 ```
+
+## Compilation and Simulation Instructions
+Instructions to run the automated testbenches via terminal:
+
+1. Running Simulations
+Navigate to the sim/ directory and execute the Makefile (adjust commands depending on the chosen tool):
+
+```bash
+cd sim
+make run
+```
+
+2. Viewing Waveforms
+To evaluate the functional correctness and analyze waveforms using GTKWave:
+
+```bash
+gtkwave sim/waveform.vcd
+```
