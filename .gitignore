@@ -1,0 +1,16 @@
+# Simulation and Tool Outputs
+work/
+transcript
+vsim.wlf
+*.log
+*.vcd
+*.key
+*.o
+*.out
+*.sim
+*~
+
+# Operating System files
+.DS_Store
+Thumbs.db
+*.Zone.Identifier
