@@ -1,5 +1,12 @@
 # RISC-V Cache Controller
 
+## Team
+* Bruno Menezes Rodrigues Oliveira Vaz
+* João Costa Calazans
+* João Pedro Torres
+* Lucas Carneiro Nassau Malta
+* Pedro Henrique Debs Rabelo
+
 ## Description
 This repository contains the implementation of a Cache Controller in SystemVerilog, based on the specification presented in Chapter 5, Section 5.12 of the book *Computer Organization and Design: The Hardware/Software Interface (RISC-V Edition)*.
 
