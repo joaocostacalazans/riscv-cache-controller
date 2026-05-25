@@ -34,6 +34,7 @@ sudo apt install build-essential iverilog verilator gtkwave -y
 Instructions to run the automated testbenches via terminal:
 
 1. Running Simulations
+
 Navigate to the sim/ directory and execute the Makefile (adjust commands depending on the chosen tool):
 
 ```bash
@@ -42,6 +43,7 @@ make run
 ```
 
 2. Viewing Waveforms
+
 To evaluate the functional correctness and analyze waveforms using GTKWave:
 
 ```bash
