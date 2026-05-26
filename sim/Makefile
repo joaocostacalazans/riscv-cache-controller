@@ -1,12 +1,9 @@
 # Compiler and Simulator setup
-# Default tool: Icarus Verilog (iverilog) / vvp
-# Can be changed to Questasim (vlog/vsim) or Verilator as needed.
 
-SIM_TOOL = iverilog
-VVP = vvp
+SIM_TOOL = verilator
+FLAGS = --binary --trace --top-module cache_controller_tb
 GTKWAVE = gtkwave
 
-# Source files
 SRC_DIR = ../src
 TB_DIR  = ../tb
 
@@ -14,29 +11,30 @@ SRC_FILES = $(SRC_DIR)/cache_tag.sv \
             $(SRC_DIR)/cache_data.sv \
             $(SRC_DIR)/cache_controller.sv
 
-TB_FILES  = $(TB_DIR)/mem_main_model.sv \
-            $(TB_DIR)/cache_controller_tb.sv
+TB_FILES  = $(TB_DIR)/cache_controller_tb.sv \
+            $(TB_DIR)/mem_main_model.sv
 
-ALL_FILES = $(SRC_FILES) $(TB_FILES)
+ALL_FILES = $(TB_FILES) $(SRC_FILES)
 
 # Output files
-SIM_OUT = sim.out
+SIM_NAME = sim.out
+SIM_FILE = obj_dir/$(SIM_NAME)
 VCD_OUT = dump.vcd
 
 .PHONY: all compile run view clean
 
 all: run
 
-compile: $(SIM_OUT)
+compile: $(SIM_FILE)
 
-$(SIM_OUT): $(ALL_FILES)
-	$(SIM_TOOL) -g2012 -o $(SIM_OUT) $(ALL_FILES)
+$(SIM_FILE): $(ALL_FILES)
+	$(SIM_TOOL) $(FLAGS) -o $(SIM_NAME) $(ALL_FILES)
 
 run: compile
-	$(VVP) $(SIM_OUT)
+	./$(SIM_FILE)
 
 view: $(VCD_OUT)
 	$(GTKWAVE) $(VCD_OUT) &
 
 clean:
-	rm -rf $(SIM_OUT) $(VCD_OUT) work transcript vsim.wlf
+	rm -rf obj_dir $(VCD_OUT) work transcript vsim.wlf

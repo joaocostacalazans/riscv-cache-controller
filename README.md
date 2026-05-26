@@ -21,13 +21,13 @@ The objective of this project is to consolidate hardware design concepts related
 ## Prerequisites & Dependencies
 To compile and simulate this project on a Linux/WSL environment, you will need:
 * **GNU Make** (v4.3 or newer)
-* **Icarus Verilog** (v11.0 or newer) or **Verilator**
+* **Verilator**
 * **GTKWave** (for waveform visualization)
 
 You can install the dependencies on Ubuntu/Debian-based systems using:
 ```bash
 sudo apt update
-sudo apt install build-essential iverilog verilator gtkwave -y
+sudo apt install build-essential verilator gtkwave -y
 ```
 
 ## Compilation and Simulation Instructions

@@ -2,6 +2,7 @@
 work/
 transcript
 vsim.wlf
+obj_dir
 *.log
 *.vcd
 *.key
