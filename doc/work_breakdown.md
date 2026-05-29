@@ -197,7 +197,7 @@ Create `tb/cache_data_tb.sv` with the following self-checking tests:
 
 ## T3 — Cache Controller FSM (`cache_controller`)
 
-**Assignee:** _________________  
+**Assignee:** Pedro Henrique Debs Rabelo
 
 **File:** [`src/cache_controller.sv`](file:///home/costa/workspace/courses/arq3/riscv-cache-controller/src/cache_controller.sv)
 
