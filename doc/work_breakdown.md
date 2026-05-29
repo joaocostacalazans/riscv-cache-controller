@@ -14,10 +14,10 @@
 
 | Parameter         | Value             | Derivation                         |
 |:------------------|:------------------|:-----------------------------------|
-| Cache Size        | 4 KB              | 256 lines × 4 words × 4 bytes     |
+| Cache Size        | 16 KB             | 1024 lines × 4 words × 4 bytes    |
 | Line Size         | 4 words (16 B)    | `offset[3:2]` selects word         |
-| Number of Lines   | 256               | `index[11:4]` (8 bits)             |
-| Tag Width         | 20 bits           | `addr[31:12]`                      |
+| Number of Lines   | 1024              | `index[13:4]` (10 bits)            |
+| Tag Width         | 18 bits           | `addr[31:14]`                      |
 | Data Word Width   | 32 bits           | RISC-V word                        |
 | Write Policy      | Write-Back        | Dirty bit per line                 |
 | Associativity     | 1 (direct-mapped) | —                                  |
@@ -25,10 +25,10 @@
 ### 0.2 Address Field Decomposition (32-bit)
 
 ```
- 31          12 | 11       4 | 3    2 | 1  0
- ──────────────┼────────────┼────────┼──────
-     TAG (20)  | INDEX (8)  | OFFSET | BYTE
-               |            |  (2)   | (2)
+ 31              14 | 13          4 | 3    2 | 1  0
+ ──────────────────┼──────────────┼────────┼──────
+     TAG (18)      |  INDEX (10)  | OFFSET | BYTE
+                   |              |  (2)   | (2)
 ```
 
 ### 0.3 FSM State Diagram (Section 5.12)
@@ -49,7 +49,7 @@ stateDiagram-v2
 | File                                  | Subtask | Description                          |
 |:--------------------------------------|:-------:|:-------------------------------------|
 | `src/cache_tag.sv`                    |   T1    | Tag + valid + dirty storage          |
-| `src/cache_data.sv`                   |   T2    | Data word storage (4 words × 256)    |
+| `src/cache_data.sv`                   |   T2    | Data word storage (4 words × 1024)   |
 | `src/cache_controller.sv`             |   T3    | FSM + datapath wiring                |
 | `src/cache_top.sv` **[NEW]**          |   T4    | Top-level integration wrapper        |
 | `tb/mem_main_model.sv`                |   T4    | Main-memory model (exists)           |
@@ -71,7 +71,7 @@ stateDiagram-v2
 
 ### T1.1 — Specification
 
-The Tag Memory stores the 20-bit tag, a **valid** bit, and a **dirty** bit for each of the 256 cache lines. It supports synchronous writes and combinational reads to allow same-cycle hit detection.
+The Tag Memory stores the 18-bit tag, a **valid** bit, and a **dirty** bit for each of the 1024 cache lines. It supports synchronous writes and combinational reads to allow same-cycle hit detection.
 
 ### T1.2 — Interface Contract
 
@@ -81,14 +81,14 @@ module cache_tag (
     input  logic        rst,
 
     // Lookup / Write Port
-    input  logic [7:0]  index,       // Line index (addr[11:4])
+    input  logic [9:0]  index,       // Line index (addr[13:4])
     input  logic        we,          // Write-enable (set by FSM)
-    input  logic [19:0] tag_in,      // Tag to be written
+    input  logic [17:0] tag_in,      // Tag to be written
     input  logic        valid_in,    // Valid bit to be written
     input  logic        dirty_in,    // Dirty bit to be written
 
     // Read Port (combinational)
-    output logic [19:0] tag_out,     // Stored tag at 'index'
+    output logic [17:0] tag_out,     // Stored tag at 'index'
     output logic        valid_out,   // Stored valid bit
     output logic        dirty_out    // Stored dirty bit
 );
@@ -98,9 +98,9 @@ module cache_tag (
 
 | Requirement    | Detail                                                                     |
 |:---------------|:---------------------------------------------------------------------------|
-| Storage        | `logic [19:0] tag_array [0:255]`                                           |
-|                | `logic valid_array [0:255]`                                                |
-|                | `logic dirty_array [0:255]`                                                |
+| Storage        | `logic [17:0] tag_array [0:1023]`                                          |
+|                | `logic valid_array [0:1023]`                                               |
+|                | `logic dirty_array [0:1023]`                                               |
 | Reset          | On `rst`, all `valid_array` entries → `0` (cold start). Dirty bits → `0`. |
 | Write          | Synchronous (`posedge clk`): if `we`, store `tag_in`, `valid_in`, `dirty_in` at `index`. |
 | Read           | **Combinational** (async read): `tag_out`, `valid_out`, `dirty_out` reflect current `index` continuously. |
@@ -113,7 +113,7 @@ Create `tb/cache_tag_tb.sv` with the following self-checking tests:
 
 | Test ID | Scenario                    | Pass Condition                                              |
 |:--------|:----------------------------|:------------------------------------------------------------|
-| TT-01   | Cold reset                  | All 256 `valid_out` read as `0`                             |
+| TT-01   | Cold reset                  | All 1024 `valid_out` read as `0`                            |
 | TT-02   | Write then read (same idx)  | `tag_out`, `valid_out`, `dirty_out` match written values    |
 | TT-03   | Overwrite at same index     | New values replace old; old values not visible              |
 | TT-04   | Different indices isolation  | Write to index `A` does not corrupt index `B`               |
@@ -137,7 +137,7 @@ Create `tb/cache_tag_tb.sv` with the following self-checking tests:
 
 ### T2.1 — Specification
 
-The Data Memory stores 4 data words (32-bit each) per cache line, totaling 256 lines × 4 words = 1024 words. It supports:
+The Data Memory stores 4 data words (32-bit each) per cache line, totaling 1024 lines × 4 words = 4096 words. It supports:
 - **Word-level writes** (CPU write-hit via `offset` + `we`), and
 - **Full-line writes** (block fill from main memory during Allocate, via `line_we` + `line_in`).
 
@@ -148,7 +148,7 @@ module cache_data (
     input  logic          clk,
 
     // Word-Level Access (CPU read/write hit)
-    input  logic [7:0]    index,       // Line index (addr[11:4])
+    input  logic [9:0]    index,       // Line index (addr[13:4])
     input  logic [1:0]    offset,      // Word select within line (addr[3:2])
     input  logic          we,          // Word write-enable
     input  logic [31:0]   data_in,     // Word to write
@@ -169,7 +169,7 @@ module cache_data (
 
 | Requirement    | Detail                                                                  |
 |:---------------|:------------------------------------------------------------------------|
-| Storage        | `logic [31:0] data_array [0:255][0:3]` (256 lines × 4 words)           |
+| Storage        | `logic [31:0] data_array [0:1023][0:3]` (1024 lines × 4 words)         |
 | Word Read      | **Combinational**: `data_out = data_array[index][offset]`               |
 | Line Read      | **Combinational**: `line_out = {data_array[index][3], ..., data_array[index][0]}` |
 | Word Write     | Synchronous: if `we`, `data_array[index][offset] <= data_in`           |
@@ -243,7 +243,7 @@ module cache_controller (
 
 #### COMPARE_TAG — Hit Path
 ```
-if (valid_out && tag_out == cpu_addr[31:12]):
+if (valid_out && tag_out == cpu_addr[31:14]):
     if (cpu_write):
         cache_data.we     ← 1
         cache_data.data_in← cpu_wdata
@@ -257,7 +257,7 @@ if (valid_out && tag_out == cpu_addr[31:12]):
 
 #### COMPARE_TAG — Miss Path
 ```
-if (!valid_out || tag_out != cpu_addr[31:12]):
+if (!valid_out || tag_out != cpu_addr[31:14]):
     if (valid_out && dirty_out):
         next_state ← WRITE_BACK      // evict first
     else:
@@ -286,7 +286,7 @@ if (word_counter == 4):
     cache_data.line_we  ← 1
     cache_data.line_in  ← fill_buffer
     cache_tag.we        ← 1
-    cache_tag.tag_in    ← cpu_addr[31:12]
+    cache_tag.tag_in    ← cpu_addr[31:14]
     cache_tag.valid_in  ← 1
     cache_tag.dirty_in  ← 0
     next_state          ← COMPARE_TAG   // re-compare for the hit
@@ -296,8 +296,8 @@ if (word_counter == 4):
 
 ```systemverilog
 // Inside cache_controller:
-wire [19:0] tag_field   = cpu_addr[31:12];
-wire [7:0]  index_field = cpu_addr[11:4];
+wire [17:0] tag_field   = cpu_addr[31:14];
+wire [9:0]  index_field = cpu_addr[13:4];
 wire [1:0]  offset_field= cpu_addr[3:2];
 
 cache_tag u_tag (

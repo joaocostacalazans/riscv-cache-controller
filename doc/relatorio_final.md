@@ -193,16 +193,17 @@ Diferentemente do tag array, o módulo de dados **não possui sinal de reset**. 
 
 ---
 
-% TODO (Responsável pela FSM — Subtask T3):
-% Documentar nesta seção as decisões de projeto da máquina de estados finitos.
-% Incluir:
-%   - Justificativa para o número de estados (Idle, Compare Tag, Allocate, Write-Back)
-%   - Diagrama de transição de estados com as condições de transição
-%   - Mapa de sinais de controle por estado (quais sinais são assertados em cada estado)
-%   - Protocolo de transferência word-by-word para Write-Back e Allocate
-%   - Detalhamento da lógica de read-modify-write para write hits
-%   - Decisões sobre a implementação: always_ff para transições, always_comb para saídas
-%   - Quaisquer dificuldades encontradas durante a implementação
+<!-- TODO (Responsável pela FSM — Subtask T3):
+Documentar nesta seção as decisões de projeto da máquina de estados finitos.
+Incluir:
+  - Justificativa para o número de estados (Idle, Compare Tag, Allocate, Write-Back)
+  - Diagrama de transição de estados com as condições de transição
+  - Mapa de sinais de controle por estado (quais sinais são assertados em cada estado)
+  - Protocolo de transferência word-by-word para Write-Back e Allocate
+  - Detalhamento da lógica de read-modify-write para write hits
+  - Decisões sobre a implementação: always_ff para transições, always_comb para saídas
+  - Quaisquer dificuldades encontradas durante a implementação
+-->
 
 ### 2.4. Máquina de Estados Finitos (FSM)
 
@@ -210,15 +211,16 @@ Diferentemente do tag array, o módulo de dados **não possui sinal de reset**. 
 
 ---
 
-% TODO (Responsável pela Integração — Subtask T4):
-% Documentar nesta seção as decisões de projeto da integração top-level.
-% Incluir:
-%   - Estrutura do módulo cache_top.sv e como conecta os submódulos
-%   - Modificações realizadas no modelo de memória principal (mem_main_model.sv)
-%   - Atualizações no Makefile e targets de compilação
-%   - Dificuldades de integração encontradas (ex: sinais desconectados, incompatibilidades
-%     de largura de barramento, problemas de timing entre módulos)
-%   - Decisões sobre pré-inicialização da memória ($readmemh) para testes determinísticos
+<!-- TODO (Responsável pela Integração — Subtask T4):
+Documentar nesta seção as decisões de projeto da integração top-level.
+Incluir:
+  - Estrutura do módulo cache_top.sv e como conecta os submódulos
+  - Modificações realizadas no modelo de memória principal (mem_main_model.sv)
+  - Atualizações no Makefile e targets de compilação
+  - Dificuldades de integração encontradas (ex: sinais desconectados, incompatibilidades
+    de largura de barramento, problemas de timing entre módulos)
+  - Decisões sobre pré-inicialização da memória ($readmemh) para testes determinísticos
+-->
 
 ### 2.5. Integração Top-Level e Modelo de Memória
 
@@ -226,14 +228,15 @@ Diferentemente do tag array, o módulo de dados **não possui sinal de reset**. 
 
 ---
 
-% TODO (Responsável pelos Testbenches — Subtask T5):
-% Documentar nesta seção a estratégia de validação e os testbenches implementados.
-% Incluir:
-%   - Metodologia de self-checking (tasks cpu_read, cpu_write_op, check)
-%   - Listagem das 4 categorias de teste: Read Path, Write Path, Replacement/Write-Back, Edge Cases
-%   - Para cada cenário de teste: descrição, estímulos aplicados, resultado esperado
-%   - Estratégia de cobertura funcional (quais cenários garantem cobertura completa)
-%   - Dificuldades encontradas nos testes (ex: timing de handshake, race conditions)
+<!-- TODO (Responsável pelos Testbenches — Subtask T5):
+Documentar nesta seção a estratégia de validação e os testbenches implementados.
+Incluir:
+  - Metodologia de self-checking (tasks cpu_read, cpu_write_op, check)
+  - Listagem das 4 categorias de teste: Read Path, Write Path, Replacement/Write-Back, Edge Cases
+  - Para cada cenário de teste: descrição, estímulos aplicados, resultado esperado
+  - Estratégia de cobertura funcional (quais cenários garantem cobertura completa)
+  - Dificuldades encontradas nos testes (ex: timing de handshake, race conditions)
+-->
 
 ### 2.6. Testbenches e Validação Automatizada
 
@@ -243,34 +246,35 @@ Diferentemente do tag array, o módulo de dados **não possui sinal de reset**. 
 
 ## 3. Resultados
 
-% TODO (Todos os membros):
-% Esta seção deve conter os resultados da validação funcional do sistema completo.
-% Estrutura sugerida:
-%
-% 3.1. Resultados dos Testes Unitários
-%   - Tabela resumo com PASS/FAIL para cada teste do cache_tag_tb e cache_data_tb
-%   - Capturas de tela (waveforms) dos testes TT-02 e TD-02 demonstrando a
-%     temporização de escrita síncrona e leitura combinacional
-%
-% 3.2. Resultados dos Testes de FSM
-%   - Tabela resumo com PASS/FAIL para TF-01 a TF-06
-%   - Waveform mostrando uma transição completa: IDLE → COMPARE_TAG → ALLOCATE → COMPARE_TAG → IDLE
-%   - Waveform mostrando evicção: IDLE → COMPARE_TAG → WRITE_BACK → ALLOCATE → COMPARE_TAG → IDLE
-%
-% 3.3. Resultados dos Testes de Sistema
-%   - Tabela consolidada com todos os 17 testes (TS-A01 a TS-D05)
-%   - Saída do console mostrando a contagem final de PASS/FAIL
-%   - Waveforms representativos para cenários críticos:
-%     * TS-C02 (dirty replacement com write-back)
-%     * TS-D02 (reset mid-operation)
-%     * TS-D05 (write → evict → re-read)
-%
-% 3.4. Análise de Desempenho
-%   - Contagem de ciclos de clock para cada tipo de operação (read hit, read miss, write hit, etc.)
-%   - Comparação com os valores esperados da teoria (Seção 5.12)
-%
-% Para inserir waveforms como imagem, use:
-%   ![Descrição do waveform](nome_do_arquivo.png)
+<!-- TODO (Todos os membros):
+Esta seção deve conter os resultados da validação funcional do sistema completo.
+Estrutura sugerida:
+
+3.1. Resultados dos Testes Unitários
+  - Tabela resumo com PASS/FAIL para cada teste do cache_tag_tb e cache_data_tb
+  - Capturas de tela (waveforms) dos testes TT-02 e TD-02 demonstrando a
+    temporização de escrita síncrona e leitura combinacional
+
+3.2. Resultados dos Testes de FSM
+  - Tabela resumo com PASS/FAIL para TF-01 a TF-06
+  - Waveform mostrando uma transição completa: IDLE → COMPARE_TAG → ALLOCATE → COMPARE_TAG → IDLE
+  - Waveform mostrando evicção: IDLE → COMPARE_TAG → WRITE_BACK → ALLOCATE → COMPARE_TAG → IDLE
+
+3.3. Resultados dos Testes de Sistema
+  - Tabela consolidada com todos os 17 testes (TS-A01 a TS-D05)
+  - Saída do console mostrando a contagem final de PASS/FAIL
+  - Waveforms representativos para cenários críticos:
+    * TS-C02 (dirty replacement com write-back)
+    * TS-D02 (reset mid-operation)
+    * TS-D05 (write → evict → re-read)
+
+3.4. Análise de Desempenho
+  - Contagem de ciclos de clock para cada tipo de operação (read hit, read miss, write hit, etc.)
+  - Comparação com os valores esperados da teoria (Seção 5.12)
+
+Para inserir waveforms como imagem, use:
+  ![Descrição do waveform](nome_do_arquivo.png)
+-->
 
 *Seção a ser preenchida após a conclusão de todas as subtasks.*
 
@@ -278,14 +282,15 @@ Diferentemente do tag array, o módulo de dados **não possui sinal de reset**. 
 
 ## 4. Conclusão
 
-% TODO (Todos os membros — redigir colaborativamente):
-% Incluir:
-%   - Resumo do que foi implementado e validado
-%   - Comparação entre o projeto final e a especificação da Seção 5.12
-%   - Principais desafios técnicos enfrentados e como foram superados
-%   - Lições aprendidas sobre design de hardware digital e hierarquia de memória
-%   - Possíveis extensões: cache set-associativa, write-through, suporte a burst,
-%     integração com um core RISC-V real, etc.
+<!-- TODO (Todos os membros — redigir colaborativamente):
+Incluir:
+  - Resumo do que foi implementado e validado
+  - Comparação entre o projeto final e a especificação da Seção 5.12
+  - Principais desafios técnicos enfrentados e como foram superados
+  - Lições aprendidas sobre design de hardware digital e hierarquia de memória
+  - Possíveis extensões: cache set-associativa, write-through, suporte a burst,
+    integração com um core RISC-V real, etc.
+-->
 
 *Seção a ser preenchida ao final do projeto.*
 
@@ -293,19 +298,20 @@ Diferentemente do tag array, o módulo de dados **não possui sinal de reset**. 
 
 ## 5. Uso de IA
 
-% TODO (Todos os membros):
-% Documentar de forma transparente como ferramentas de IA foram utilizadas no projeto.
-% Para cada uso, incluir:
-%   - Ferramenta utilizada (ex: ChatGPT, GitHub Copilot, Gemini, Claude, etc.)
-%   - Contexto de uso (ex: geração de scaffold inicial, debugging, revisão de código,
-%     geração de testbenches, redação de documentação)
-%   - O que foi gerado pela IA vs. o que foi desenvolvido/modificado manualmente
-%   - Avaliação crítica: a IA acertou/errou? O que precisou ser corrigido?
-%
-% Exemplo de formato:
-%   | Ferramenta | Contexto                          | Contribuição da IA                | Modificações Manuais           |
-%   |:-----------|:----------------------------------|:----------------------------------|:-------------------------------|
-%   | Gemini     | Scaffold do work_breakdown.md     | Estrutura inicial do WBS          | Ajuste de parâmetros e revisão |
+<!-- TODO (Todos os membros):
+Documentar de forma transparente como ferramentas de IA foram utilizadas no projeto.
+Para cada uso, incluir:
+  - Ferramenta utilizada (ex: ChatGPT, GitHub Copilot, Gemini, Claude, etc.)
+  - Contexto de uso (ex: geração de scaffold inicial, debugging, revisão de código,
+    geração de testbenches, redação de documentação)
+  - O que foi gerado pela IA vs. o que foi desenvolvido/modificado manualmente
+  - Avaliação crítica: a IA acertou/errou? O que precisou ser corrigido?
+
+Exemplo de formato:
+  | Ferramenta | Contexto                          | Contribuição da IA                | Modificações Manuais           |
+  |:-----------|:----------------------------------|:----------------------------------|:-------------------------------|
+  | Gemini     | Scaffold do work_breakdown.md     | Estrutura inicial do WBS          | Ajuste de parâmetros e revisão |
+-->
 
 *Seção a ser preenchida por cada membro individualmente.*
 
