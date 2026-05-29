@@ -63,7 +63,7 @@ stateDiagram-v2
 
 ## T1 — Tag Memory Module (`cache_tag`)
 
-**Assignee:** _________________  
+**Assignee:** João Costa Calazans
 
 **File:** [`src/cache_tag.sv`](file:///home/costa/workspace/courses/arq3/riscv-cache-controller/src/cache_tag.sv)  
 
