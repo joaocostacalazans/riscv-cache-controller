@@ -340,7 +340,7 @@ cache_data u_data (
 
 ## T4 — Top-Level Integration & Memory Model (`cache_top`)
 
-**Assignee:** _________________  
+**Assignee:** Bruno Menezes Rodrigues Oliveira Vaz 
 
 **Files:**
 
