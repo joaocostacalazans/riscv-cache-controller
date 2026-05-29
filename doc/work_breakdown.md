@@ -129,7 +129,7 @@ Create `tb/cache_tag_tb.sv` with the following self-checking tests:
 
 ## T2 — Data Memory Module (`cache_data`)
 
-**Assignee:** _________________  
+**Assignee:** João Pedro Torres
 
 **File:** [`src/cache_data.sv`](file:///home/costa/workspace/courses/arq3/riscv-cache-controller/src/cache_data.sv)  
 
