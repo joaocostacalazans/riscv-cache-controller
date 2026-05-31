@@ -35,11 +35,23 @@ Instructions to run the automated testbenches via terminal:
 
 1. Running Simulations
 
-Navigate to the sim/ directory and execute the Makefile (adjust commands depending on the chosen tool):
+Navigate to the sim/ directory and execute the Makefile to compile the tests (adjust commands depending on the chosen tool):
 
 ```bash
 cd sim
-make run
+make compile
+```
+
+To execute all tests:
+
+```bash
+make run -j1
+```
+
+To execute a specific test (for the cache_controller module as an example):
+
+```bash
+make test_cache_controller
 ```
 
 2. Viewing Waveforms

@@ -1,57 +1,43 @@
 # Compiler and Simulator setup
 
 SIM_TOOL = verilator
-FLAGS = --binary --trace --top-module cache_controller_tb
-GTKWAVE = gtkwave
-
-IVERILOG = iverilog
-VVP = vvp
-IV_FLAGS = -g2012
+FLAGS = --binary --trace
 
 SRC_DIR = ../src
 TB_DIR  = ../tb
 
-# Arquivos de input
+# Arquivos compartilhados por todos test benches
 SRC_FILES = $(SRC_DIR)/cache_tag.sv \
             $(SRC_DIR)/cache_data.sv \
             $(SRC_DIR)/cache_controller.sv \
-			$(SRC_DIR)/cache_top.sv 
-
-TB_FILES  = $(TB_DIR)/cache_controller_tb.sv \
+            $(SRC_DIR)/cache_top.sv \
             $(TB_DIR)/mem_main_model.sv
 
-ALL_FILES = $(TB_FILES) $(SRC_FILES)
+OBJ_DIR = obj_dir
 
-# Output files
-SIM_NAME = sim.out
-SIM_FILE = obj_dir/$(SIM_NAME)
-VCD_OUT = dump.vcd
-
-.PHONY: all compile run view clean
+# Para cada "tb/modulo_tb.sv" crie um "test_modulo" aqui
+TESTS = test_cache_controller test_cache_data
 
 all: run
 
-compile: $(SIM_FILE)
+# Rode "make run -j1" para não rodar os tests em paralelo
+run: $(TESTS)
 
-$(SIM_FILE): $(ALL_FILES)
-	$(SIM_TOOL) $(FLAGS) -o $(SIM_NAME) $(ALL_FILES)
+# É bom compilar tudo antes de rodar todos os testes para não poluir o output
+compile: $(TESTS:test_%=$(OBJ_DIR)/V%_tb)
 
-run: compile
-	./$(SIM_FILE)
+# Regra para os executaveis
+$(OBJ_DIR)/V%: $(TB_DIR)/%.sv $(SRC_FILES)
+	$(SIM_TOOL) $(FLAGS) --top-module $* $^
 
-view: $(VCD_OUT)
-	$(GTKWAVE) $(VCD_OUT) &
+# Regra para rodar os testes
+test_%: $(OBJ_DIR)/V%_tb FORCE
+	./$<
 
 clean:
-	rm -rf obj_dir $(VCD_OUT) work transcript vsim.wlf
+	rm -rf $(OBJ_DIR) *.vcd work transcript vsim.wlf
 
-# --- New Targets ---
-test_tag:
-	$(IVERILOG) $(IV_FLAGS) -o tag_test.out $(SRC_DIR)/cache_tag.sv $(TB_DIR)/cache_tag_tb.sv
-	$(VVP) tag_test.out
+# Adicionar $(TESTS) no .PHONY não ta funcionando, o FORCE é uma solução
+FORCE:
 
-test_data:
-	$(IVERILOG) $(IV_FLAGS) -o data_test.out $(SRC_DIR)/cache_data.sv $(TB_DIR)/cache_data_tb.sv
-	$(VVP) data_test.out
-
-test_all: test_tag test_data run
+.PHONY: all compile run clean FORCE
