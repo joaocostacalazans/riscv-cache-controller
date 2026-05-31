@@ -10,14 +10,17 @@
 
 ## Sumário
 
+## Sumário
+
 1. [Introdução](#1-introdução)
 2. [Desenvolvimento](#2-desenvolvimento)
    - 2.1 [Definições Arquiteturais e Estruturas de Interface](#21-definições-arquiteturais-e-estruturas-de-interface-cache_defsv)
    - 2.2 [Módulo de Tags — dm_cache_tag](#22-módulo-de-tags--dm_cache_tag)
    - 2.3 [Módulo de Dados — dm_cache_data](#23-módulo-de-dados--dm_cache_data)
-   - 2.4 [Máquina de Estados Finitos (FSM)](#24-máquina-de-estados-finitos-fsm)
-   - 2.5 [Integração Top-Level e Modelo de Memória](#25-integração-top-level-e-modelo-de-memória)
-   - 2.6 [Testbenches e Validação Automatizada](#26-testbenches-e-validação-automatizada)
+   - 2.4 [Módulo de Dados — cache_data](#24-módulo-de-dados--cache_data)
+   - 2.5 [Máquina de Estados Finitos (FSM)](#25-máquina-de-estados-finitos-fsm)
+   - 2.6 [Integração Top-Level e Modelo de Memória](#26-integração-top-level-e-modelo-de-memória)
+   - 2.7 [Testbenches e Validação Automatizada](#27-testbenches-e-validação-automatizada)
 3. [Resultados](#3-resultados)
 4. [Conclusão](#4-conclusão)
 5. [Uso de IA](#5-uso-de-ia)
@@ -193,6 +196,89 @@ Diferentemente do tag array, o módulo de dados **não possui sinal de reset**. 
 
 ---
 
+## 2.4. Módulo de Dados — `cache_data`
+
+O módulo `cache_data` é responsável pelo armazenamento efetivo dos dados da cache. Diferentemente do módulo de tags, ele não participa diretamente da lógica de decisão de *hit* ou *miss*, atuando apenas como memória de dados indexada pelo controlador.
+
+### 2.4.1. Estrutura de Armazenamento
+
+Internamente, o módulo utiliza uma memória bidimensional composta por 1024 linhas de cache, cada uma contendo 4 palavras de 32 bits:
+
+```systemverilog
+logic [31:0] data_array [0:1023][0:3];
+```
+
+Essa organização corresponde a uma capacidade total de:
+
+- 1024 linhas de cache;
+- 4 palavras por linha;
+- 32 bits por palavra;
+
+resultando em 4096 palavras ou 16 KB de armazenamento.
+
+A utilização de um arranjo bidimensional torna explícita a separação entre o índice da linha (`index`) e o deslocamento interno (`offset`), simplificando tanto a leitura quanto a escrita de palavras individuais.
+
+### 2.4.2. Leitura Combinacional
+
+A leitura foi implementada de forma combinacional, permitindo que o dado solicitado esteja disponível sem a necessidade de ciclos adicionais de clock.
+
+Para acesso por palavra:
+
+```systemverilog
+data_out = data_array[index][offset];
+```
+
+Já para acesso à linha completa, utilizado em operações de *write-back* e inspeção da linha armazenada, os quatro elementos são concatenados em um barramento de 128 bits:
+
+```systemverilog
+for (int i = 0; i < WORDS_PER_LINE; i++)
+    line_out[i*32 +: 32] = data_array[index][i];
+```
+
+A leitura combinacional reduz a latência de acesso durante operações de *hit*, permitindo que o controlador obtenha imediatamente a palavra ou a linha correspondente ao índice solicitado.
+
+### 2.4.3. Escrita por Palavra
+
+Durante uma operação de *write hit*, apenas uma palavra da linha precisa ser atualizada. Para isso, o módulo disponibiliza uma interface de escrita por palavra controlada pelo sinal `we`.
+
+A atualização ocorre de forma síncrona na borda positiva do clock:
+
+```systemverilog
+if (we)
+    data_array[index][offset] <= data_in;
+```
+
+Essa abordagem garante que apenas a posição especificada pelo par `(index, offset)` seja modificada, preservando as demais palavras da linha.
+
+### 2.4.4. Escrita de Linha Completa
+
+Durante operações de *allocate*, o controlador recebe uma linha completa da memória principal e precisa armazená-la integralmente na cache.
+
+Para esse cenário, o módulo oferece uma segunda interface de escrita controlada por `line_we`:
+
+```systemverilog
+for (int i = 0; i < WORDS_PER_LINE; i++)
+    data_array[index][i] <= line_in[i*32 +: 32];
+```
+
+A utilização de um laço reduz a repetição de código e facilita futuras alterações na quantidade de palavras por linha.
+
+Conforme definido na especificação do projeto, os sinais `we` e `line_we` são mutuamente exclusivos, sendo responsabilidade da FSM garantir que apenas um deles esteja ativo em cada ciclo.
+
+### 2.4.5. Estratégia de Verificação
+
+A validação do módulo foi realizada por meio de um *testbench* dedicado (`cache_data_tb.sv`), contemplando cinco cenários principais:
+
+| Teste | Objetivo |
+|---------|----------|
+| TD-01 | Verificar escrita e leitura de palavra |
+| TD-02 | Verificar escrita de linha e leitura por offset |
+| TD-03 | Verificar leitura de linha completa |
+| TD-04 | Garantir que a escrita de uma palavra preserve as demais palavras da linha |
+| TD-05 | Garantir isolamento entre diferentes índices da cache |
+
+Todos os testes foram executados utilizando o simulador Icarus Verilog e concluídos com sucesso.
+
 <!-- TODO (Responsável pela FSM — Subtask T3):
 Documentar nesta seção as decisões de projeto da máquina de estados finitos.
 Incluir:
@@ -205,7 +291,7 @@ Incluir:
   - Quaisquer dificuldades encontradas durante a implementação
 -->
 
-### 2.4. Máquina de Estados Finitos (FSM)
+### 2.5. Máquina de Estados Finitos (FSM)
 
 *Seção a ser preenchida pelo responsável da Subtask T3.*
 
@@ -222,7 +308,7 @@ Incluir:
   - Decisões sobre pré-inicialização da memória ($readmemh) para testes determinísticos
 -->
 
-### 2.5. Integração Top-Level e Modelo de Memória
+### 2.6. Integração Top-Level e Modelo de Memória
 
 *Seção a ser preenchida pelo responsável da Subtask T4.*
 
@@ -238,7 +324,7 @@ Incluir:
   - Dificuldades encontradas nos testes (ex: timing de handshake, race conditions)
 -->
 
-### 2.6. Testbenches e Validação Automatizada
+### 2.7. Testbenches e Validação Automatizada
 
 *Seção a ser preenchida pelo responsável da Subtask T5.*
 
@@ -314,6 +400,16 @@ Exemplo de formato:
 -->
 
 *Seção a ser preenchida por cada membro individualmente.*
+
+### Contribuição de João Pedro Torres
+
+| Ferramenta | Contexto | Contribuição da IA | Modificações Manuais |
+|:-----------|:---------|:-------------------|:---------------------|
+| ChatGPT | Estudo de SystemVerilog e implementação do módulo `cache_data` | Explicação dos conceitos de memória de cache, leitura/escrita síncrona e combinacional, esclarecimento da ferramentas da linguagem Verilog  e orientação na construção dos testes unitários. | Toda a implementação do módulo `cache_data.sv` e do testbench `cache_data_tb.sv` foi desenvolvida manualmente. As sugestões fornecidas foram analisadas, adaptadas à especificação do projeto e validadas por meio de simulação utilizando Icarus Verilog. |
+
+**Avaliação crítica:**  
+
+A ferramenta foi utilizada principalmente como apoio educacional para compreender conceitos de SystemVerilog, arquitetura de cache e metodologia de testes. As explicações auxiliaram na interpretação da especificação da tarefa e na identificação de erros durante a fase de depuração. Entretanto, todas as implementações foram revisadas e adaptadas manualmente para atender aos requisitos definidos no projeto. Em alguns momentos foi necessário ajustar sugestões relacionadas à temporização da simulação e à estrutura dos testes para garantir compatibilidade com o ambiente utilizado e com a especificação fornecida.
 
 ---
 
