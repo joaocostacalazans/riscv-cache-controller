@@ -4,12 +4,18 @@ SIM_TOOL = verilator
 FLAGS = --binary --trace --top-module cache_controller_tb
 GTKWAVE = gtkwave
 
+IVERILOG = iverilog
+VVP = vvp
+IV_FLAGS = -g2012
+
 SRC_DIR = ../src
 TB_DIR  = ../tb
 
+# Arquivos de input
 SRC_FILES = $(SRC_DIR)/cache_tag.sv \
             $(SRC_DIR)/cache_data.sv \
-            $(SRC_DIR)/cache_controller.sv
+            $(SRC_DIR)/cache_controller.sv \
+			$(SRC_DIR)/cache_top.sv 
 
 TB_FILES  = $(TB_DIR)/cache_controller_tb.sv \
             $(TB_DIR)/mem_main_model.sv
@@ -38,3 +44,14 @@ view: $(VCD_OUT)
 
 clean:
 	rm -rf obj_dir $(VCD_OUT) work transcript vsim.wlf
+
+# --- New Targets ---
+test_tag:
+	$(IVERILOG) $(IV_FLAGS) -o tag_test.out $(SRC_DIR)/cache_tag.sv $(TB_DIR)/cache_tag_tb.sv
+	$(VVP) tag_test.out
+
+test_data:
+	$(IVERILOG) $(IV_FLAGS) -o data_test.out $(SRC_DIR)/cache_data.sv $(TB_DIR)/cache_data_tb.sv
+	$(VVP) data_test.out
+
+test_all: test_tag test_data run
